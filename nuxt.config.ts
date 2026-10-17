@@ -21,10 +21,11 @@ export default defineNuxtConfig({
         wrangler: { name: 'prs' },
       },
     },
+    // `isr` is Vercel/Netlify only and silently ignored on Cloudflare.
+    // `swr` uses Nitro's cache storage, backed by Workers KV through NuxtHub.
     routeRules: {
-      '/': { isr: 60 * 5 },
-      '/api/contributions': { isr: 60 * 5 },
-      '/feed.xml': { isr: 60 * 5 },
+      '/': { swr: 60 * 10 },
+      '/feed.xml': { swr: 60 * 10 },
     },
   },
 
@@ -33,7 +34,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   // https://nuxt.com/docs/getting-started/upgrade#testing-nuxt-4
-  compatibilityDate: '2025-01-01',
+  compatibilityDate: '2026-10-01',
 
   // https://eslint.nuxt.com
   eslint: {

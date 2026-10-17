@@ -1,4 +1,4 @@
-export default defineEventHandler(async () => {
+export default defineCachedEventHandler(async () => {
   const octokit = useOctokit()
   // Fetch user from token
   const userResponse = await octokit.request('GET /user')
@@ -29,13 +29,16 @@ export default defineEventHandler(async () => {
     advanced_search: 'true',
   })
 
-  console.log(data.items.length)
+  // Fetch the repository details of all PRs in parallel
+  const repos = await Promise.all(data.items.map((pr) => {
+    const [owner, name] = pr.repository_url.split('/').slice(-2)
+    return fetchRepo(owner!, name!)
+  }))
 
   const prs: PullRequest[] = []
-  // For each PR, fetch the repository details
-  for (const pr of data.items) {
+  for (const [index, pr] of data.items.entries()) {
     const [owner, name] = pr.repository_url.split('/').slice(-2)
-    const repo = await fetchRepo(owner!, name!)
+    const repo = repos[index]
     // Skip PRs whose repo is inaccessible (deleted, renamed, or hidden from the token)
     if (!repo) continue
 
@@ -55,4 +58,10 @@ export default defineEventHandler(async () => {
     user,
     prs,
   } as Contributions
+}, {
+  // Served from Workers KV, refreshed in the background once stale
+  name: 'contributions',
+  maxAge: 60 * 10,
+  swr: true,
+  getKey: () => 'default',
 })
