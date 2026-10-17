@@ -10,7 +10,7 @@ export default defineCachedEventHandler(async () => {
   const hidePrivateRepos = process.env.HIDE_PRIVATE_REPOS === 'true'
   const excludeRepos = process.env.EXCLUDE_REPOS?.split(',').map(repo => repo.trim()).filter(Boolean) ?? []
   const excludeOrgs = process.env.EXCLUDE_ORGS?.split(',').map(org => org.trim()).filter(Boolean) ?? []
-  const prCount = Number(process.env.PR_COUNT ?? 50)
+  const prCount = Number(process.env.PR_COUNT) || 50
 
   // Fetch pull requests from user
   const queryParts = [
